@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="eng">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, intial-scale=1.0">
+        <meta http-equiv="refresh" content="30">
+        <title>Sensor</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+        <style>
+            .charts-container {
+                display: grid; /* Use CSS Grid for layout */
+                grid-template-columns: repeat(2, 1fr); /* Divide container into two columns */
+                grid-template-rows: repeat(2, 1fr); /* Divide container into two rows */
+                gap: 20px; /* Gap between charts */
+            }
+            .chart-wrapper {
+                position: relative;
+                padding:0; /* Remove padding */
+                margin: 50; /* Remove margin */
+            }
+        </style>
+    </head>
+    <body>
+        <h1> Sensor Data Collection</h1>
+        <p>Press the START/ STOP button below to control the data collection.</p>
+        <button id="start" title="START" style="width:100px; height:20px;">START</button>
+        <button id="stop" title="STOP" style="width:100px; height:20px;">STOP </button>
+        <pre id="messages" style="height: 40px; overflow: scroll"></pre>
+
+        <div class="charts-container">
+            <div class="chart-wrapper">
+                <canvas id="chart1"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chart2"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chart3"></canvas>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="chart4"></canvas>
+            </div>
+        </div>
+
+        <script>
+            (function(){
+                const startBtn = document.querySelector('#start');
+                const stopBtn = document.querySelector('#stop');
+                const messages = document.querySelector('#messages');
+
+                let ws;
+
+                function showMessage(message) {
+                    messages.textContent +=  `\n\n${message}`;
+                    messages.scrollTop = messages.scrollHeight;
+
+                }
+
+                function init(){
+                    if (ws) {
+                        ws.onerror = ws.onclose = null;
+                        ws.close();
+                    }
+                    ws = new WebSocket('ws://10.224.39.10:80');
+                    ws.onopen = () => {
+                        console.log('Connection opened!')
+                    }
+                    ws.onmessage = ({data}) => showMessage(data);
+                    ws.onclose = function(){
+                        ws = null;
+                    }
+                }
+
+                startBtn.onclick = function(){
+                    if(!ws) {
+                        showMessage("No WebSocket connection!");
+                        return;
+                    }
+                    ws.send("Client: start to collect data!")
+                }
+                
+                stopBtn.onclick = function(){
+                    if(!ws) {
+                        showMessage("No WebSocket connection!");
+                        return;
+                    }
+                    ws.send("Client: stop collecting data!")
+                }
+
+                init();
+
+            })();
+            
+            
+            let count = 0;
+            let time_ref =0;
+            ///char1();
+            ///char2();
+
+            async function getData(){
+                const xs = [];
+                const Sy1 = []; const Sy2 = []; const Sy3 = [];
+                const Ay1 = []; const Ay2 = []; const Ay3 = [];
+                const response = await fetch('/api');
+                const data = await response.text();
+                //console.log(data);
+                
+                const table = data.split('{').slice(3);
+                //console.log(table);
+
+                table.forEach(row => {
+                    const columns = row.split('\\r\\n');
+                    const time = columns[1];
+                    
+                    if (count == 0){
+                        time_ref = time;
+                    }
+
+                    count += 1;
+                    xs.push(parseFloat(time) - time_ref);
+                    const sensor = [columns[2],columns[3],columns[4]];
+                    Sy1.push(sensor[0]);
+                    Sy2.push(sensor[1]);
+                    Sy3.push(sensor[2]);
+                    const accel = [columns[5],columns[6],columns[7]];
+                    Ay1.push(accel[0]);
+                    Ay2.push(accel[1]);
+                    Ay3.push(accel[2]);
+                    //console.log(time, sensor, accel);
+                });
+                return {xs,Sy1,Sy2,Sy3,Ay1,Ay2,Ay3};
+            }
+            
+            const ctx = document.querySelector('#chart1').getContext('2d');
+            const myChart1 = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [], 
+                    datasets:[
+                        {
+                            label:'Channel 1',
+                            data: [], 
+                            fill: false,
+                            backgroundColor:'blue',
+                            borderColor: 'blue',
+                            
+                        },
+                        {
+                            label:'Channel 2',
+                            data: [],
+                            fill: false,
+                            backgroundColor:'red',
+                            borderColor: 'red',
+                            
+                        }
+                    ]
+                },
+                options:{
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Timestamps(ms))',
+                                font:{
+                                    size: 18
+                                },
+                                
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Resistance(omh)',
+                                font:{
+                                    size: 18
+                                },
+                            },
+                            suggestedMin: 0, // Minimum value for the y-axis scale
+                            suggestedMax: 200, // Maximum value for the y-axis scale
+                            ticks: {
+                                stepSize: 20, // Step size for the y-axis scale
+                                font:{
+                                    size: 16
+                                },
+                            }
+                        },
+                    },
+                    animation:false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Football',
+                            font:{
+                                size: 20
+                            },
+                            
+                        },
+                        legend: {
+                            labels: {
+                                font:{
+                                    size: 18 // Change the font size of the legend labels
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+            
+            const ctx3 = document.querySelector('#chart3').getContext('2d');
+            const myChart3 = new Chart(ctx3, {
+                type: 'line',
+                data: {
+                    labels: [], 
+                    datasets:[
+                        {
+                            label:'Channel 3',
+                            data: [],
+                            fill: false,
+                            backgroundColor:'orange',
+                            borderColor: 'orange',
+                        }
+                    ]
+                },
+                options:{
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Timestamps(ms))',
+                                font:{
+                                    size: 18
+                                },
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Resistance(omh)',
+                                font:{
+                                    size: 18
+                                },
+                            },
+                            suggestedMin: 0, // Minimum value for the y-axis scale
+                            suggestedMax: 100, // Maximum value for the y-axis scale
+                            ticks: {
+                                stepSize: 10, // Step size for the y-axis scale
+                                font:{
+                                    size: 16
+                                },
+                            }
+                        },
+                    },
+                    animation:false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Heel',
+                            font:{
+                                size: 20
+                            },
+                        },
+                        legend: {
+                            labels: {
+                                font:{
+                                    size: 18 // Change the font size of the legend labels
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+
+            const ctx2 = document.querySelector('#chart2').getContext('2d');
+            const myChart2 = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets:[
+                        {
+                            label:'X',
+                            data: [],
+                            fill: false,
+                            backgroundColor:'blue',
+                            borderColor: 'blue'
+                        },
+                    ]
+                },
+                options:{
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Timestamps(ms))',
+                                font:{
+                                    size: 18
+                                },
+                            }
+                        },          
+                        y: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Acceleration(g = 9.8m/s^2)',
+                                font:{
+                                    size: 18
+                                },
+                            },
+                            suggestedMin: -1, // Minimum value for the y-axis scale
+                            suggestedMax: 1, // Maximum value for the y-axis scale
+                            ticks: {
+                                font:{
+                                    size: 16
+                                },
+                            }
+                        }
+                    },
+                    animation:false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Accelerometer',
+                            font:{
+                                size: 20
+                            },
+                        },
+                        legend: {
+                            labels: {
+                                font:{
+                                    size: 18 // Change the font size of the legend labels
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const ctx4 = document.querySelector('#chart4').getContext('2d');
+            const myChart4 = new Chart(ctx4, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets:[
+                        {
+                            label:'Y',
+                            data: [],
+                            fill: false,
+                            backgroundColor:'red',
+                            borderColor: 'red'
+                        },
+                        {
+                            label:'Z',
+                            data: [],
+                            fill: false,
+                            backgroundColor:'orange',
+                            borderColor: 'orange'
+                        }
+                    ]
+                },
+                options:{
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Timestamps(ms))',
+                                font:{
+                                    size: 18
+                                },
+                            }
+                        },          
+                        y: {
+                            title: {
+                                display: true,
+                                align: 'center',
+                                text: 'Acceleration(g = 9.8m/s^2)',
+                                font:{
+                                    size: 18
+                                },
+                            },
+                            suggestedMin: -1, // Minimum value for the y-axis scale
+                            suggestedMax: 1, // Maximum value for the y-axis scale
+                            ticks: {
+                                font:{
+                                    size: 16
+                                },
+                            }
+                        }
+                    },
+                    animation:false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Accelerometer',
+                            font:{
+                                size: 20
+                            },
+                        },
+                        legend: {
+                            labels: {
+                                font:{
+                                    size: 18 // Change the font size of the legend labels
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            async function updateChart1(chart){
+                var i;
+                const Data = await getData();
+                chart.data.labels = Data.xs.slice(-100,-1);
+                chart.data.datasets[0].data = Data.Sy1.slice(-100,-1);
+                chart.data.datasets[1].data = Data.Sy2.slice(-100,-1);
+                chart.update();
+            }
+
+            async function updateChart3(chart){
+                var i;
+                const Data = await getData();
+                chart.data.labels = Data.xs.slice(-100,-1);
+                chart.data.datasets[0].data = Data.Sy3.slice(-100,-1);
+                chart.update();
+            }
+
+            async function updateChart2(chart){
+                var i;
+                const Data = await getData();
+                chart.data.labels = Data.xs.slice(-100,-1);
+                chart.data.datasets[0].data = Data.Ay1.slice(-100,-1);
+                chart.update();
+            }
+
+            async function updateChart4(chart){
+                var i;
+                const Data = await getData();
+                chart.data.labels = Data.xs.slice(-100,-1);
+                chart.data.datasets[0].data = Data.Ay2.slice(-100,-1);
+                chart.data.datasets[1].data = Data.Ay3.slice(-100,-1);
+                chart.update();
+            }
+
+            updateChart1(myChart1);
+            updateChart2(myChart2);
+            updateChart3(myChart3);
+            updateChart4(myChart4);
+
+            setTimeout(function() {
+                window.location.reload();
+            }, 500);
+            </script>
+    
+    </body>
+</html>
