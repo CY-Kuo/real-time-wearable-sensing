@@ -61,7 +61,7 @@
                         ws.onerror = ws.onclose = null;
                         ws.close();
                     }
-                    ws = new WebSocket('ws://10.224.39.10:80');
+                    ws = new WebSocket('wss://kuocy-7e2cb61e-68c2-40f2-8c57-f9ddb480a2e9.socketxp.com');
                     ws.onopen = () => {
                         console.log('Connection opened!')
                     }
@@ -96,12 +96,12 @@
             let time_ref =0;
             ///char1();
             ///char2();
-
-            async function getData(){
+            
+            async function getData(k){
                 const xs = [];
                 const Sy1 = []; const Sy2 = []; const Sy3 = [];
                 const Ay1 = []; const Ay2 = []; const Ay3 = [];
-                const response = await fetch('/api');
+                const response = await fetch(k);
                 const data = await response.text();
                 //console.log(data);
                 
@@ -110,7 +110,7 @@
 
                 table.forEach(row => {
                     const columns = row.split('\\r\\n');
-                    const time = columns[1];
+                    const time = columns[2];
                     
                     if (count == 0){
                         time_ref = time;
@@ -118,11 +118,11 @@
 
                     count += 1;
                     xs.push(parseFloat(time) - time_ref);
-                    const sensor = [columns[2],columns[3],columns[4]];
+                    const sensor = [columns[3],columns[4],columns[5]];
                     Sy1.push(sensor[0]);
                     Sy2.push(sensor[1]);
                     Sy3.push(sensor[2]);
-                    const accel = [columns[5],columns[6],columns[7]];
+                    const accel = [columns[6],columns[7],columns[8]];
                     Ay1.push(accel[0]);
                     Ay2.push(accel[1]);
                     Ay3.push(accel[2]);
@@ -410,10 +410,10 @@
                     }
                 }
             });
-            
+            route = '/A1';
             async function updateChart1(chart){
                 var i;
-                const Data = await getData();
+                const Data = await getData(route);
                 chart.data.labels = Data.xs.slice(-100,-1);
                 chart.data.datasets[0].data = Data.Sy1.slice(-100,-1);
                 chart.data.datasets[1].data = Data.Sy2.slice(-100,-1);
@@ -422,7 +422,7 @@
 
             async function updateChart3(chart){
                 var i;
-                const Data = await getData();
+                const Data = await getData(route);
                 chart.data.labels = Data.xs.slice(-100,-1);
                 chart.data.datasets[0].data = Data.Sy3.slice(-100,-1);
                 chart.update();
@@ -430,7 +430,7 @@
 
             async function updateChart2(chart){
                 var i;
-                const Data = await getData();
+                const Data = await getData(route);
                 chart.data.labels = Data.xs.slice(-100,-1);
                 chart.data.datasets[0].data = Data.Ay1.slice(-100,-1);
                 chart.update();
@@ -438,7 +438,7 @@
 
             async function updateChart4(chart){
                 var i;
-                const Data = await getData();
+                const Data = await getData(route);
                 chart.data.labels = Data.xs.slice(-100,-1);
                 chart.data.datasets[0].data = Data.Ay2.slice(-100,-1);
                 chart.data.datasets[1].data = Data.Ay3.slice(-100,-1);

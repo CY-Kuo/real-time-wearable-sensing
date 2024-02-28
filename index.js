@@ -2,13 +2,25 @@
 const express = require('express');
 const app = express();
 const Datastore = require('nedb');
-const database = new Datastore({filename:'database.db'});
 app.use(express.static('public'));
-database.loadDatabase();
 
+const database1 = new Datastore({filename:'database1.db'});
+const database2 = new Datastore({filename:'database2.db'});
+database1.loadDatabase();
+database2.loadDatabase();
+app.get('/A1', (request, response) => {
+    database1.find({},(err, data) => {
+        if (err){
+            response.end();
+            return;
+        }
+        response.json(data);
+        ///console.log(data);
+    });
+});
 
-app.get('/api', (request, response) => {
-    database.find({},(err, data) => {
+app.get('/A2', (request, response) => {
+    database2.find({},(err, data) => {
         if (err){
             response.end();
             return;
@@ -65,9 +77,12 @@ wsServer.on('request', function(request) {
     connection.on('message', function(message) {
         const data = message.utf8Data;
         console.log('Received message' + data);
+        label = (data[2]+data[3])
+
         if (data == "Client: start to collect data!"){
             order = 0;  //when order = 0 -->Start colleting
-            database.insert({_id:count,ReceivedTime: new Date().toString()});
+            database1.insert({_id:count,ReceivedTime: new Date().toString()});
+            database2.insert({_id:count,ReceivedTime: new Date().toString()});
             console.log("Start collecting...");
             connection.sendUTF("Server: Start collecting...");
         }
@@ -79,17 +94,17 @@ wsServer.on('request', function(request) {
         
         if(order ==0){
             count +=1;
-            console.log('Data:' + data);
-            database.insert({_id:count, data});
+            if (label == "A1"){
+                database1.insert({_id:count, data});
+            }
+            else if(label == "A2"){
+                database2.insert({_id:count, data});
+            }
         }
         
     });
 
     //console.log(order);
-
-    
-    
-            
     //connection.sendUTF("Server: Collection complete!!!");
     
     connection.on('close', function(reasonCode, description) {
