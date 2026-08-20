@@ -1,4 +1,5 @@
 /*
+  Origianl file:
   Simple WebSocket client for ArduinoHttpClient library
   Connects to the WebSocket server, and sends a hello
   message every 5 seconds
@@ -9,6 +10,9 @@
   by Tom Igoe
 
   this example is in the public domain
+
+  Modified for sensor data collection and display 
+  by Chiaying Kuo
 */
 #include <ArduinoHttpClient.h>
 #include <WiFiNINA.h>
