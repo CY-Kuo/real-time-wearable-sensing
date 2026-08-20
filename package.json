@@ -1,9 +1,11 @@
 {
-  "name": "websocket-server",
+  "name": "real-time-wearable-sensing",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "Wearable pressure and IMU sensing with WebSocket streaming, multi-process Node.js data handling, and real-time browser visualization.",
+  "main": "server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server/server.js",
+    "check": "node --check server/server.js"
   },
   "author": "",
   "license": "ISC",
@@ -12,6 +14,5 @@
     "nedb": "^1.8.0",
     "websocket": "^1.0.34",
     "ws": "^8.16.0"
-  },
-  "description": ""
+  }
 }
