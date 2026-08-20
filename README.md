@@ -2,13 +2,13 @@
 
 End-to-end wearable sensing prototype integrating pressure and IMU acquisition, wireless WebSocket communication, concurrent Node.js processing, and browser-based live visualization.
 
-![Wearable sensing prototype](assets/system_demo.jpg)
+![Wearable sensing prototype](assets/system_demo.png)
 
 ## System Overview
 
 The system was designed to collect multi-channel foot-pressure and inertial data from wearable sensor nodes and stream them to a central server for storage, monitoring, and downstream analysis.
 
-![System architecture](assets/system_architecture.jpg)
+![System architecture](assets/system_architecture.png)
 
 **Data flow**
 
