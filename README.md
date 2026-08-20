@@ -33,8 +33,6 @@ The Arduino firmware reads three analog pressure channels and IMU acceleration d
 
 `server/server.js` uses Node.js `cluster` to fork worker processes based on available CPU cores. Browser START/STOP commands are broadcast from the primary process to the sensor workers using inter-process messaging. Sensor messages are forwarded back to the primary process and stored according to the `A1`–`A4` device label.
 
-This is **multi-process concurrency**, not a C++ multithreading implementation.
-
 ### Live dashboard
 
 The browser dashboard uses Chart.js to display recent pressure and acceleration measurements and communicates with the server through WebSocket and HTTP endpoints.
@@ -42,8 +40,8 @@ The browser dashboard uses Chart.js to display recent pressure and acceleration 
 ## Technology
 
 **Embedded:** Arduino/C++, WiFiNINA, MKR IMU  
-**Backend:** Node.js, Express, WebSocket, NeDB, `cluster`  
-**Frontend:** JavaScript, HTML/CSS, Chart.js  
+**Backend:** Node.js, Express, WebSocket, NeDB  
+**Frontend:** JavaScript, HTML/CSS 
 **Data:** Python
 
 ## Repository Structure
