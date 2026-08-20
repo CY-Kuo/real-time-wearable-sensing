@@ -1,0 +1,11 @@
+node_modules/
+.DS_Store
+*.db
+*.csv
+*.xlsx
+*.npy
+__pycache__/
+*.pyc
+.env
+hosting_web_client/arduino_secrets.h
+firmware/arduino_secrets.h
