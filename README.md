@@ -100,3 +100,11 @@ The Arduino firmware also requires the server address to match the machine runni
 ## Project Context
 
 This project was developed as a research prototype for wearable sensing and real-time data collection. The public repository is organized as an engineering portfolio artifact and focuses on the embedded-to-edge sensing pipeline.
+
+## Related Publication
+
+The wireless sensing and real-time monitoring workflow represented in this repository supported the gait-monitoring experiments reported in:
+
+**J.-B. Ahn, B. Yoo, D. J. Pines, C.-Y. Kuo, M. Wang, N. S. G. Bejjanki, and S. Kim, “Microchannel pressure sensor for continuous and real-time wearable gait monitoring,” _Communications Materials_, vol. 5, Article 136, 2024.**
+
+[View publication](https://www.nature.com/articles/s43246-024-00570-9)
